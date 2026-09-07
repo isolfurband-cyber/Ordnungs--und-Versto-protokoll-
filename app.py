@@ -86,7 +86,6 @@ with st.form("verstoss_form"):
         label="Verstoßprotokoll als PDF generieren"
     )
 
-# Unterschriften-Canvas außerhalb des Forms platziert für reibungslose Bedienung auf iPad/Tablet
 st.header("4. Digitale Signaturen")
 col_sig_info1, col_sig_info2 = st.columns(2)
 with col_sig_info1:
@@ -95,24 +94,33 @@ with col_sig_info1:
         fill_color="rgba(255, 255, 255, 0)",
         stroke_width=2,
         stroke_color="#000000",
-        background_color="#f8fafc",
+        background_color="#ffffff",
         height=130,
         width=350,
         drawing_mode="freedraw",
+        update_streamlit=True,
+        return_image_data=True,
         key="canvas_mieter_verstoss",
     )
+    if canvas_mieter.image_data is not None and np.any(canvas_mieter.image_data[:, :, 3] > 0):
+        st.session_state["saved_mieter_sig_v"] = canvas_mieter.image_data
+
 with col_sig_info2:
     st.write("**Unterschrift KARE-Immobilien**")
     canvas_kare = st_canvas(
         fill_color="rgba(255, 255, 255, 0)",
         stroke_width=2,
         stroke_color="#000000",
-        background_color="#f8fafc",
+        background_color="#ffffff",
         height=130,
         width=350,
         drawing_mode="freedraw",
+        update_streamlit=True,
+        return_image_data=True,
         key="canvas_kare_verstoss",
     )
+    if canvas_kare.image_data is not None and np.any(canvas_kare.image_data[:, :, 3] > 0):
+        st.session_state["saved_kare_sig_v"] = canvas_kare.image_data
 
 if submit_button:
     if not protokoll_bestätigt:
@@ -141,55 +149,26 @@ if submit_button:
                 """
             images_html += "</div>"
 
-        # Sichere Unterschriften-Auswertung (Mieter)
-        sig_mieter_html = "____________________________________<br>Mieter / Verursacher"
-        try:
-            if (
-                canvas_mieter.image_data is not None
-                and canvas_mieter.json_data is not None
-                and len(canvas_mieter.json_data.get("objects", [])) > 0
-            ):
-                sig_img_data1 = canvas_mieter.image_data.astype(np.uint8)
-                sig_pil1 = Image.fromarray(sig_img_data1).convert("RGBA")
-                datas = sig_pil1.getdata()
-                new_data = [
-                    (255, 255, 255, 0)
-                    if item[0] > 240 and item[1] > 240 and item[2] > 240
-                    else item
-                    for item in datas
-                ]
-                sig_pil1.putdata(new_data)
-                sig_buf1 = BytesIO()
-                sig_pil1.save(sig_buf1, format="PNG")
-                sig_str1 = base64.b64encode(sig_buf1.getvalue()).decode()
-                sig_mieter_html = f"<img src='data:image/png;base64,{sig_str1}' style='max-height:60px;'/><br>____________________________________<br>Mieter / Verursacher"
-        except Exception:
-            pass
+        def get_sig_base64(state_key):
+            if state_key in st.session_state and st.session_state[state_key] is not None:
+                img_data = st.session_state[state_key].astype("uint8")
+                pil_img = Image.fromarray(img_data, mode="RGBA")
+                background = Image.new("RGB", pil_img.size, (255, 255, 255))
+                background.paste(pil_img, mask=pil_img.split()[3])
+                
+                buffered = BytesIO()
+                background.save(buffered, format="PNG")
+                return base64.b64encode(buffered.getvalue()).decode()
+            return None
 
-        # Sichere Unterschriften-Auswertung (KARE-Immobilien)
-        sig_kare_html = "____________________________________<br>KARE-Immobilien"
-        try:
-            if (
-                canvas_kare.image_data is not None
-                and canvas_kare.json_data is not None
-                and len(canvas_kare.json_data.get("objects", [])) > 0
-            ):
-                sig_img_data2 = canvas_kare.image_data.astype(np.uint8)
-                sig_pil2 = Image.fromarray(sig_img_data2).convert("RGBA")
-                datas2 = sig_pil2.getdata()
-                new_data2 = [
-                    (255, 255, 255, 0)
-                    if item[0] > 240 and item[1] > 240 and item[2] > 240
-                    else item
-                    for item in datas2
-                ]
-                sig_pil2.putdata(new_data2)
-                sig_buf2 = BytesIO()
-                sig_pil2.save(sig_buf2, format="PNG")
-                sig_str2 = base64.b64encode(sig_buf2.getvalue()).decode()
-                sig_kare_html = f"<img src='data:image/png;base64,{sig_str2}' style='max-height:60px;'/><br>____________________________________<br>KARE-Immobilien"
-        except Exception:
-            pass
+        sig_str1 = get_sig_base64("saved_mieter_sig_v")
+        sig_str2 = get_sig_base64("saved_kare_sig_v")
+
+        sig_mieter_html = f"<img src='data:image/png;base64,{sig_str1}' style='max-height:55px; display:block; margin-bottom:2px;'/><br>" if sig_str1 else "<br><br>"
+        sig_mieter_html += "____________________________________<br>Mieter / Verursacher"
+
+        sig_kare_html = f"<img src='data:image/png;base64,{sig_str2}' style='max-height:55px; display:block; margin-bottom:2px;'/><br>" if sig_str2 else "<br><br>"
+        sig_kare_html += "____________________________________<br>KARE-Immobilien"
 
         html_content = f"""
         <!DOCTYPE html>
