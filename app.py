@@ -16,9 +16,8 @@ st.set_page_config(
 
 st.title("KARE-Immobilien – Ordnungs- & Verstoßprotokoll")
 st.markdown(
-    "Dokumentation von Verstößen gegen die Hausordnung oder Mängeln im"
-    " Gemeinschaftseigentum mit Fotodokumentation, Fristsetzung und"
-    " Unterschrift."
+    "Dokumentation von Verstößen gegen die Hausordnung oder Mängeln im "
+    "Gemeinschaftseigentum mit Fotodokumentation, Fristsetzung und Unterschrift."
 )
 
 with st.form("verstoss_form"):
@@ -52,12 +51,12 @@ with st.form("verstoss_form"):
             ],
         )
 
-    st.header("2. genaue Beschreibung des Verstoßes")
+    st.header("2. Genaue Beschreibung des Verstoßes")
     beschreibung = st.text_area(
         "Sachverhalt / Details",
         placeholder=(
-            "z.B. Im 2. Obergeschoss stehen dauerhaft mehrere Kartons und ein"
-            " Schuhregal im notwendigen Fluchtweg..."
+            "z.B. Im 2. Obergeschoss stehen dauerhaft mehrere Kartons und ein "
+            "Schuhregal im notwendigen Fluchtweg..."
         ),
     )
 
@@ -118,8 +117,7 @@ with col_sig_info2:
 if submit_button:
     if not protokoll_bestätigt:
         st.error(
-            "Bitte bestätige das Protokoll über die Checkbox, bevor du das PDF"
-            " generierst."
+            "Bitte bestätige das Protokoll über die Checkbox, bevor du das PDF generierst."
         )
     else:
         images_html = ""
@@ -143,50 +141,55 @@ if submit_button:
                 """
             images_html += "</div>"
 
-        # Unterschriften aufbereiten
-        sig_mieter_html = (
-            "____________________________________<br>Mieter / Verursacher"
-        )
-        if (
-            canvas_mieter.image_data is not None
-            and canvas_mieter.json_data["objects"]
-        ):
-            sig_img_data1 = canvas_mieter.image_data.astype(np.uint8)
-            sig_pil1 = Image.fromarray(sig_img_data1).convert("RGBA")
-            datas = sig_pil1.getdata()
-            new_data = [
-                (255, 255, 255, 0)
-                if item[0] > 240 and item[1] > 240 and item[2] > 240
-                else item
-                for item in datas
-            ]
-            sig_pil1.putdata(new_data)
-            sig_buf1 = BytesIO()
-            sig_pil1.save(sig_buf1, format="PNG")
-            sig_str1 = base64.b64encode(sig_buf1.getvalue()).decode()
-            sig_mieter_html = f"<img src='data:image/png;base64,{sig_str1}' style='max-height:60px;'/><br>____________________________________<br>Mieter / Verursacher"
+        # Sichere Unterschriften-Auswertung (Mieter)
+        sig_mieter_html = "____________________________________<br>Mieter / Verursacher"
+        try:
+            if (
+                canvas_mieter.image_data is not None
+                and canvas_mieter.json_data is not None
+                and len(canvas_mieter.json_data.get("objects", [])) > 0
+            ):
+                sig_img_data1 = canvas_mieter.image_data.astype(np.uint8)
+                sig_pil1 = Image.fromarray(sig_img_data1).convert("RGBA")
+                datas = sig_pil1.getdata()
+                new_data = [
+                    (255, 255, 255, 0)
+                    if item[0] > 240 and item[1] > 240 and item[2] > 240
+                    else item
+                    for item in datas
+                ]
+                sig_pil1.putdata(new_data)
+                sig_buf1 = BytesIO()
+                sig_pil1.save(sig_buf1, format="PNG")
+                sig_str1 = base64.b64encode(sig_buf1.getvalue()).decode()
+                sig_mieter_html = f"<img src='data:image/png;base64,{sig_str1}' style='max-height:60px;'/><br>____________________________________<br>Mieter / Verursacher"
+        except Exception:
+            pass
 
-        sig_kare_html = (
-            "____________________________________<br>KARE-Immobilien"
-        )
-        if (
-            canvas_kare.image_data is not None
-            and canvas_kare.json_data["objects"]
-        ):
-            sig_img_data2 = canvas_kare.image_data.astype(np.uint8)
-            sig_pil2 = Image.fromarray(sig_img_data2).convert("RGBA")
-            datas2 = sig_pil2.getdata()
-            new_data2 = [
-                (255, 255, 255, 0)
-                if item[0] > 240 and item[1] > 240 and item[2] > 240
-                else item
-                for item in datas2
-            ]
-            sig_pil2.putdata(new_data2)
-            sig_buf2 = BytesIO()
-            sig_pil2.save(sig_buf2, format="PNG")
-            sig_str2 = base64.b64encode(sig_buf2.getvalue()).decode()
-            sig_kare_html = f"<img src='data:image/png;base64,{sig_str2}' style='max-height:60px;'/><br>____________________________________<br>KARE-Immobilien"
+        # Sichere Unterschriften-Auswertung (KARE-Immobilien)
+        sig_kare_html = "____________________________________<br>KARE-Immobilien"
+        try:
+            if (
+                canvas_kare.image_data is not None
+                and canvas_kare.json_data is not None
+                and len(canvas_kare.json_data.get("objects", [])) > 0
+            ):
+                sig_img_data2 = canvas_kare.image_data.astype(np.uint8)
+                sig_pil2 = Image.fromarray(sig_img_data2).convert("RGBA")
+                datas2 = sig_pil2.getdata()
+                new_data2 = [
+                    (255, 255, 255, 0)
+                    if item[0] > 240 and item[1] > 240 and item[2] > 240
+                    else item
+                    for item in datas2
+                ]
+                sig_pil2.putdata(new_data2)
+                sig_buf2 = BytesIO()
+                sig_pil2.save(sig_buf2, format="PNG")
+                sig_str2 = base64.b64encode(sig_buf2.getvalue()).decode()
+                sig_kare_html = f"<img src='data:image/png;base64,{sig_str2}' style='max-height:60px;'/><br>____________________________________<br>KARE-Immobilien"
+        except Exception:
+            pass
 
         html_content = f"""
         <!DOCTYPE html>
@@ -333,11 +336,11 @@ if submit_button:
             PDFbyte = pdf_file.read()
 
         st.success("Verstoßprotokoll erfolgreich als PDF erstellt!")
+        
+        safe_einheit = "".join(c for c in einheit if c.isalnum() or c in (' ', '_', '-')).strip().replace(' ', '_')
         st.download_button(
             label="📄 Verstoßprotokoll als PDF herunterladen",
             data=PDFbyte,
-            file_name=(
-                f"Verstoss_{datum.strftime('%Y%m%d')}_{einheit.replace(' ', '_')}.pdf"
-            ),
-            mime="application/octet-stream",
+            file_name=f"Verstoss_{datum.strftime('%Y%m%d')}_{safe_einheit}.pdf",
+            mime="application/pdf",
         )
