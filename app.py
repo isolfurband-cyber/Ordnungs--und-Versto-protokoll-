@@ -176,7 +176,8 @@ if submit_button:
 
     sig_mieter_html = (
         f"<img src='data:image/png;base64,{sig_str1}'"
-        " style='max-height:50px; display:block; margin-bottom:2px;'/><br>"
+        " style='max-height:45px; display:block; margin: 0 auto 2px"
+        " auto;'/><br>"
         if sig_str1
         else "<br><br>"
     )
@@ -186,7 +187,8 @@ if submit_button:
 
     sig_kare_html = (
         f"<img src='data:image/png;base64,{sig_str2}'"
-        " style='max-height:50px; display:block; margin-bottom:2px;'/><br>"
+        " style='max-height:45px; display:block; margin: 0 auto 2px"
+        " auto;'/><br>"
         if sig_str2
         else "<br><br>"
     )
@@ -265,15 +267,16 @@ if submit_button:
                 margin-bottom: 10px;
                 vertical-align: top;
             }}
-            .signature-section {{
-                margin-top: 25px;
-            }}
-            .sig-box {{
-                width: 45%;
-                display: inline-block;
+            .signature-table {{
+                width: 100%;
+                border-collapse: collapse;
                 margin-top: 20px;
-                text-align: center;
+            }}
+            .signature-table td {{
+                border: none;
+                padding: 0;
                 vertical-align: top;
+                text-align: center;
             }}
         </style>
         </head>
@@ -302,17 +305,19 @@ if submit_button:
 
             {images_html}
 
-            <div class="signature-section">
+            <div style="margin-top: 25px;">
                 <p style="margin-bottom:15px; font-size:9pt;">Dokumentation des festgestellten Zustands bzw. Verstoßes gegen die Hausordnung.</p>
-                <div style="width: 100%;">
-                    <div class="sig-box" style="float: left;">
-                        {sig_mieter_html}
-                    </div>
-                    <div class="sig-box" style="float: right;">
-                        {sig_kare_html}
-                    </div>
-                </div>
-                <div style="clear: both;"></div>
+                <table class="signature-table">
+                    <tr>
+                        <td style="width: 48%;">
+                            {sig_mieter_html}
+                        </td>
+                        <td style="width: 4%;"></td>
+                        <td style="width: 48%;">
+                            {sig_kare_html}
+                        </td>
+                    </tr>
+                </table>
             </div>
         </body>
         </html>
