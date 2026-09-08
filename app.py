@@ -95,8 +95,8 @@ with col_sig_info1:
       stroke_width=2,
       stroke_color="#000000",
       background_color="#ffffff",
-      height=130,
-      width=350,
+      height=120,
+      width=260,
       drawing_mode="freedraw",
       update_streamlit=True,
       return_image_data=True,
@@ -114,8 +114,8 @@ with col_sig_info2:
       stroke_width=2,
       stroke_color="#000000",
       background_color="#ffffff",
-      height=130,
-      width=350,
+      height=120,
+      width=260,
       drawing_mode="freedraw",
       update_streamlit=True,
       return_image_data=True,
@@ -176,7 +176,7 @@ if submit_button:
 
     sig_mieter_html = (
         f"<img src='data:image/png;base64,{sig_str1}'"
-        " style='max-height:55px; display:block; margin-bottom:2px;'/><br>"
+        " style='max-height:50px; display:block; margin-bottom:2px;'/><br>"
         if sig_str1
         else "<br><br>"
     )
@@ -186,7 +186,7 @@ if submit_button:
 
     sig_kare_html = (
         f"<img src='data:image/png;base64,{sig_str2}'"
-        " style='max-height:55px; display:block; margin-bottom:2px;'/><br>"
+        " style='max-height:50px; display:block; margin-bottom:2px;'/><br>"
         if sig_str2
         else "<br><br>"
     )
